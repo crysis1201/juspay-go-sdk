@@ -5,19 +5,70 @@ package juspay
 // ──────────────────────────────────────────────────────────────────────────────
 
 type CreateSessionRequest struct {
-	OrderID             string  `json:"order_id"`
-	Amount              string  `json:"amount"`
-	CustomerID          string  `json:"customer_id,omitempty"`
-	CustomerEmail       *string `json:"customer_email,omitempty"`
-	CustomerPhone       *string `json:"customer_phone,omitempty"`
-	PaymentPageClientID string  `json:"payment_page_client_id"`
-	Action              string  `json:"action"`
-	ReturnURL           *string `json:"return_url,omitempty"`
-	Currency            string  `json:"currency"`
-	Description         string  `json:"description,omitempty"`
-	FirstName           string  `json:"first_name,omitempty"`
-	LastName            string  `json:"last_name,omitempty"`
-	UDF1                string  `json:"udf1,omitempty"`
+	OrderID             string        `json:"order_id"`
+	Amount              string        `json:"amount"`
+	CustomerID          string        `json:"customer_id,omitempty"`
+	CustomerEmail       *string       `json:"customer_email,omitempty"`
+	CustomerPhone       *string       `json:"customer_phone,omitempty"`
+	PaymentPageClientID string        `json:"payment_page_client_id"`
+	Action              string        `json:"action"`
+	ReturnURL           *string       `json:"return_url,omitempty"`
+	Currency            string        `json:"currency"`
+	Description         string        `json:"description,omitempty"`
+	FirstName           string        `json:"first_name,omitempty"`
+	LastName            string        `json:"last_name,omitempty"`
+	UDF1                string        `json:"udf1,omitempty"`
+	PaymentRules        *PaymentRules `json:"payment_rules,omitempty"`
+}
+
+// PaymentRules is the top-level Juspay payment_rules object.
+type PaymentRules struct {
+	PaymentFlows *PaymentFlows `json:"payment_flows,omitempty"`
+}
+
+// PaymentFlows contains the payment instrument rules.
+type PaymentFlows struct {
+	PaymentInstrumentRules *PaymentInstrumentRules `json:"payment_instrument_rules,omitempty"`
+}
+
+// PaymentInstrumentRules defines the status and variant info.
+type PaymentInstrumentRules struct {
+	Status string                      `json:"status"`
+	Info   *PaymentInstrumentRulesInfo `json:"info,omitempty"`
+}
+
+// PaymentInstrumentRulesInfo holds the list of payment variants.
+type PaymentInstrumentRulesInfo struct {
+	Variants []PaymentVariant `json:"variants"`
+}
+
+// PaymentVariant represents a single payment method variant with amount and filter.
+type PaymentVariant struct {
+	Amount        VariantAmount  `json:"amount"`
+	OverrideRules *OverrideRules `json:"override_rules,omitempty"`
+}
+
+// VariantAmount defines the amount type and value for a variant.
+type VariantAmount struct {
+	AmountType string `json:"amount_type"`
+	Value      string `json:"value"`
+}
+
+// OverrideRules contains the payment filter for a variant.
+type OverrideRules struct {
+	PaymentFilter *PaymentFilter `json:"payment_filter,omitempty"`
+}
+
+// PaymentFilter controls which payment methods are allowed.
+type PaymentFilter struct {
+	AllowDefaultOptions bool                  `json:"allowDefaultOptions"`
+	Options             []PaymentFilterOption `json:"options"`
+}
+
+// PaymentFilterOption enables or disables a specific payment method type.
+type PaymentFilterOption struct {
+	PaymentMethodType string `json:"paymentMethodType"`
+	Enable            bool   `json:"enable"`
 }
 
 type SessionResponse struct {
