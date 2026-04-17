@@ -116,7 +116,7 @@ type CreateTransactionRequest struct {
 	Format               string            `json:"format"`
 	AuthType             string            `json:"auth_type"`
 	Order                TxnOrder          `json:"order"`
-	Metadata             map[string]string `json:"metadata,omitempty"`
+	Metadata             map[string]any    `json:"metadata,omitempty"`
 }
 
 type TxnOrder struct {
