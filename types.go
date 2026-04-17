@@ -108,14 +108,15 @@ type CardsResponse struct {
 // ──────────────────────────────────────────────────────────────────────────────
 
 type CreateTransactionRequest struct {
-	MerchantID           string   `json:"merchant_id"`
-	PaymentMethodType    string   `json:"payment_method_type,omitempty"`
-	CardToken            string   `json:"card_token"`
-	SaveToLocker         bool     `json:"save_to_locker"`
-	RedirectAfterPayment bool     `json:"redirect_after_payment"`
-	Format               string   `json:"format"`
-	AuthType             string   `json:"auth_type"`
-	Order                TxnOrder `json:"order"`
+	MerchantID           string            `json:"merchant_id"`
+	PaymentMethodType    string            `json:"payment_method_type,omitempty"`
+	CardToken            string            `json:"card_token"`
+	SaveToLocker         bool              `json:"save_to_locker"`
+	RedirectAfterPayment bool              `json:"redirect_after_payment"`
+	Format               string            `json:"format"`
+	AuthType             string            `json:"auth_type"`
+	Order                TxnOrder          `json:"order"`
+	Metadata             map[string]string `json:"metadata,omitempty"`
 }
 
 type TxnOrder struct {
