@@ -196,6 +196,7 @@ type WebhookEvent struct {
 	EventName   string         `json:"event_name"`
 	DateCreated string         `json:"date_created"`
 	Content     WebhookContent `json:"content"`
+	ID          string         `json:"id,omitempty"`
 }
 
 type WebhookContent struct {
@@ -211,7 +212,43 @@ type WebhookOrder struct {
 	Currency          string        `json:"currency"`
 	TxnID             string        `json:"txn_id"`
 	PaymentMethodType string        `json:"payment_method_type"`
+	PaymentMethod     string        `json:"payment_method,omitempty"`
 	Card              *Card         `json:"card,omitempty"`
 	Refunds           []OrderRefund `json:"refunds,omitempty"`
 	UDF1              string        `json:"udf1,omitempty"`
+
+	TxnList                  []WebhookTxn   `json:"txn_list,omitempty"`
+	EffectiveAmount          float64        `json:"effective_amount,omitempty"`
+	PaidAmount               any            `json:"paid_amount,omitempty"`
+	CustomerEmail            string         `json:"customer_email,omitempty"`
+	CustomerPhoneCountryCode *string        `json:"customer_phone_country_code,omitempty"`
+	AdditionalInfo           map[string]any `json:"additional_info,omitempty"`
+	LastUpdated              string         `json:"last_updated,omitempty"`
+	PaymentLinks             *PaymentLinks  `json:"payment_links,omitempty"`
+	Metadata                 map[string]any `json:"metadata,omitempty"`
+	DateCreated              string         `json:"date_created,omitempty"`
+	CustomerID               string         `json:"customer_id,omitempty"`
+}
+
+type WebhookTxn struct {
+	PaymentMethod          string         `json:"payment_method,omitempty"`
+	PaymentMethodType      string         `json:"payment_method_type,omitempty"`
+	PaymentGatewayResponse map[string]any `json:"payment_gateway_response,omitempty"`
+	GatewayReferenceID     *string        `json:"gateway_reference_id,omitempty"`
+	TxnDetail              map[string]any `json:"txn_detail,omitempty"`
+	Status                 string         `json:"status,omitempty"`
+	Offers                 []any          `json:"offers,omitempty"`
+	RespMessage            *string        `json:"resp_message,omitempty"`
+	Refunded               bool           `json:"refunded,omitempty"`
+	GatewayID              int            `json:"gateway_id,omitempty"`
+	TxnIntentID            string         `json:"txn_intent_id,omitempty"`
+	EffectiveAmount        float64        `json:"effective_amount,omitempty"`
+	AuthType               string         `json:"auth_type,omitempty"`
+	RespCode               *string        `json:"resp_code,omitempty"`
+	Card                   *Card          `json:"card,omitempty"`
+	TxnUUID                string         `json:"txn_uuid,omitempty"`
+	RespCategory           *string        `json:"resp_category,omitempty"`
+	BankErrorCode          string         `json:"bank_error_code,omitempty"`
+	Metadata               map[string]any `json:"metadata,omitempty"`
+	EmiDetails             any            `json:"emi_details,omitempty"`
 }

@@ -46,7 +46,7 @@ func (c *Client) doRequest(ctx context.Context, method, path string, body io.Rea
 	}
 	req.SetBasicAuth(auth.APIKey, "")
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("x-merchantid", auth.MerchantID)
+	req.Header.Set("x-merchantid", "zuzu")
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
