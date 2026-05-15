@@ -12,6 +12,13 @@ const (
 	EventOrderRefundSucceeded = "ORDER_REFUND_SUCCEEDED"
 )
 
+// Refund status constants (value of OrderRefund.Status).
+const (
+	RefundStatusSuccess = "SUCCESS"
+	RefundStatusFailure = "FAILURE"
+	RefundStatusPending = "PENDING"
+)
+
 // ParseWebhookEvent parses a raw Juspay webhook payload into a WebhookEvent.
 func ParseWebhookEvent(payload []byte) (*WebhookEvent, error) {
 	var event WebhookEvent

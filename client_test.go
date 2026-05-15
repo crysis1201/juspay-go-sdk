@@ -155,7 +155,9 @@ func TestCreateTransaction(t *testing.T) {
 	auth := MerchantAuth{APIKey: "key", MerchantID: "M"}
 	resp, raw, err := client.CreateTransaction(context.Background(), auth, CreateTransactionRequest{
 		CardToken: "tok_123",
-		Order:     TxnOrder{OrderID: "ORD-1", Amount: "50.00", Currency: "INR"},
+		OrderID:   "ORD-1",
+		Amount:    "50.00",
+		Currency:  "INR",
 	})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
