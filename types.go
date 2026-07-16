@@ -179,6 +179,8 @@ type CreateRefundRequest struct {
 	Amount          string `json:"amount"`
 	UniqueRequestID string `json:"unique_request_id"`
 	UDF1            string `json:"udf1,omitempty"`
+	// MetaData is a JSON-encoded string echoed back per-refund in the order-status refunds array.
+	MetaData string `json:"metaData,omitempty"`
 }
 
 type RefundResponse struct {
@@ -392,20 +394,21 @@ type TxnAmountBreakup struct {
 
 // OrderRefund is a single refund entry returned across order status, refund, and webhook responses.
 type OrderRefund struct {
-	UniqueRequestID          string  `json:"unique_request_id,omitempty"`
-	ID                       any     `json:"id,omitempty"`
-	Ref                      any     `json:"ref,omitempty"`
-	Status                   string  `json:"status,omitempty"`
-	Amount                   float64 `json:"amount,omitempty"`
-	RefundType               string  `json:"refund_type,omitempty"`
-	RefundSource             string  `json:"refund_source,omitempty"`
-	InitiatedBy              string  `json:"initiated_by,omitempty"`
-	SentToGateway            bool    `json:"sent_to_gateway,omitempty"`
-	Created                  string  `json:"created,omitempty"`
-	LastUpdated              string  `json:"last_updated,omitempty"`
-	ExpectedRefundCreditTime string  `json:"expected_refund_credit_time,omitempty"`
-	ErrorCode                any     `json:"error_code,omitempty"`
-	ErrorMessage             string  `json:"error_message,omitempty"`
+	UniqueRequestID          string         `json:"unique_request_id,omitempty"`
+	ID                       any            `json:"id,omitempty"`
+	Ref                      any            `json:"ref,omitempty"`
+	Status                   string         `json:"status,omitempty"`
+	Amount                   float64        `json:"amount,omitempty"`
+	RefundType               string         `json:"refund_type,omitempty"`
+	RefundSource             string         `json:"refund_source,omitempty"`
+	InitiatedBy              string         `json:"initiated_by,omitempty"`
+	SentToGateway            bool           `json:"sent_to_gateway,omitempty"`
+	Created                  string         `json:"created,omitempty"`
+	LastUpdated              string         `json:"last_updated,omitempty"`
+	ExpectedRefundCreditTime string         `json:"expected_refund_credit_time,omitempty"`
+	ErrorCode                any            `json:"error_code,omitempty"`
+	ErrorMessage             string         `json:"error_message,omitempty"`
+	Metadata                 map[string]any `json:"metadata,omitempty"`
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
