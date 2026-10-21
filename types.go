@@ -20,6 +20,7 @@ type CreateSessionRequest struct {
 	UDF1                string         `json:"udf1,omitempty"`
 	PaymentRules        *PaymentRules  `json:"payment_rules,omitempty"`
 	PaymentFilter       *PaymentFilter `json:"payment_filter,omitempty"`
+	LogLevel            string         `json:"logLevel,omitempty"`
 }
 
 // PaymentRules is the top-level Juspay payment_rules object.
