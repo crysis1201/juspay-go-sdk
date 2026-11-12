@@ -29,8 +29,8 @@ func TestCreateSession(t *testing.T) {
 		if !ok || user != "test-api-key" {
 			t.Errorf("expected basic auth with user test-api-key, got %s", user)
 		}
-		if r.Header.Get("x-merchantid") != "TEST_MERCHANT" {
-			t.Errorf("expected x-merchantid TEST_MERCHANT, got %s", r.Header.Get("x-merchantid"))
+		if r.Header.Get("x-merchantid") != "zuzu" {
+			t.Errorf("expected x-merchantid zuzu, got %s", r.Header.Get("x-merchantid"))
 		}
 
 		// Verify request body
@@ -170,6 +170,126 @@ func TestCreateTransaction(t *testing.T) {
 	}
 	if len(raw) == 0 {
 		t.Error("expected non-empty raw response")
+	}
+}
+
+func TestCreateTransactionAutoCapture(t *testing.T) {
+	tests := []struct {
+		name        string
+		autoCapture string
+		wantKey     bool
+	}{
+		{name: "pre-auth sends auto_capture=false", autoCapture: "false", wantKey: true},
+		{name: "default omits auto_capture", autoCapture: "", wantKey: false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			client, ts := testServer(t, func(w http.ResponseWriter, r *http.Request) {
+				var body map[string]any
+				json.NewDecoder(r.Body).Decode(&body)
+				v, ok := body["order.metadata.txns.auto_capture"]
+				if ok != tt.wantKey {
+					t.Errorf("auto_capture present=%v, want %v", ok, tt.wantKey)
+				}
+				if ok && v != tt.autoCapture {
+					t.Errorf("auto_capture=%v, want %s", v, tt.autoCapture)
+				}
+				json.NewEncoder(w).Encode(TransactionResponse{TxnUUID: "uuid-1", Status: "AUTHORIZED"})
+			})
+			defer ts.Close()
+
+			resp, _, err := client.CreateTransaction(context.Background(), MerchantAuth{APIKey: "key"},
+				CreateTransactionRequest{CardToken: "tok", OrderID: "ORD-1", AutoCapture: tt.autoCapture})
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if resp.TxnUUID != "uuid-1" {
+				t.Errorf("expected uuid-1, got %s", resp.TxnUUID)
+			}
+		})
+	}
+}
+
+func TestCaptureTransaction(t *testing.T) {
+	tests := []struct {
+		name     string
+		req      CaptureTransactionRequest
+		wantForm map[string]string
+	}{
+		{name: "full capture sends no amount", req: CaptureTransactionRequest{}, wantForm: map[string]string{}},
+		{
+			name:     "partial capture sends amount and idempotence key",
+			req:      CaptureTransactionRequest{Amount: "12.50", IdempotenceKey: "cap_1"},
+			wantForm: map[string]string{"amount": "12.50", "idempotence_key": "cap_1"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			client, ts := testServer(t, func(w http.ResponseWriter, r *http.Request) {
+				if r.Method != "POST" || r.URL.Path != "/v2/txns/uuid-1/capture" {
+					t.Errorf("expected POST /v2/txns/uuid-1/capture, got %s %s", r.Method, r.URL.Path)
+				}
+				if ct := r.Header.Get("Content-Type"); ct != "application/x-www-form-urlencoded" {
+					t.Errorf("expected form content type, got %s", ct)
+				}
+				if err := r.ParseForm(); err != nil {
+					t.Fatalf("parse form: %v", err)
+				}
+				if len(r.PostForm) != len(tt.wantForm) {
+					t.Errorf("form=%v, want %v", r.PostForm, tt.wantForm)
+				}
+				for k, v := range tt.wantForm {
+					if got := r.PostForm.Get(k); got != v {
+						t.Errorf("%s=%q, want %q", k, got, v)
+					}
+				}
+				json.NewEncoder(w).Encode(TxnModificationResponse{TxnUUID: "uuid-1", Status: "CAPTURE_INITIATED", StatusID: 33})
+			})
+			defer ts.Close()
+
+			resp, raw, err := client.CaptureTransaction(context.Background(), MerchantAuth{APIKey: "key"}, "uuid-1", tt.req)
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if resp.Status != "CAPTURE_INITIATED" || resp.StatusID != 33 {
+				t.Errorf("unexpected response %+v", resp)
+			}
+			if len(raw) == 0 {
+				t.Error("expected non-empty raw response")
+			}
+		})
+	}
+}
+
+func TestVoidTransaction(t *testing.T) {
+	client, ts := testServer(t, func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "POST" || r.URL.Path != "/v2/txns/uuid-1/void" {
+			t.Errorf("expected POST /v2/txns/uuid-1/void, got %s %s", r.Method, r.URL.Path)
+		}
+		json.NewEncoder(w).Encode(TxnModificationResponse{TxnUUID: "uuid-1", Status: "VOID_INITIATED", StatusID: 32})
+	})
+	defer ts.Close()
+
+	resp, _, err := client.VoidTransaction(context.Background(), MerchantAuth{APIKey: "key"}, "uuid-1")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if resp.Status != "VOID_INITIATED" || resp.StatusID != 32 {
+		t.Errorf("unexpected response %+v", resp)
+	}
+}
+
+func TestVoidTransactionAPIError(t *testing.T) {
+	client, ts := testServer(t, func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(`{"status":"Bad Request","error_message":"Invalid state for void operation."}`))
+	})
+	defer ts.Close()
+
+	_, _, err := client.VoidTransaction(context.Background(), MerchantAuth{APIKey: "key"}, "uuid-1")
+	apiErr, ok := err.(*APIError)
+	if !ok || apiErr.StatusCode != http.StatusBadRequest {
+		t.Fatalf("expected 400 APIError, got %v", err)
 	}
 }
 

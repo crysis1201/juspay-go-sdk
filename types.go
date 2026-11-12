@@ -148,6 +148,33 @@ type CreateTransactionRequest struct {
 	CustomerID           string `json:"order.customer_id"`
 	UDF1                 string `json:"order.udf1,omitempty"`
 	AllowCardNo3DS       string `json:"order.metadata.txns.allow_card_no_3ds,omitempty"`
+	// AutoCapture "false" makes the transaction a pre-auth (terminal status AUTHORIZED);
+	// empty leaves Juspay's default of immediate capture.
+	AutoCapture string `json:"order.metadata.txns.auto_capture,omitempty"`
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Pre-auth capture / void (POST /v2/txns/{txn_uuid}/capture, /void)
+// ──────────────────────────────────────────────────────────────────────────────
+
+type CaptureTransactionRequest struct {
+	// Amount is set only for a partial capture; empty captures the full authorized amount.
+	Amount string
+	// IdempotenceKey is optional for full and partial captures, mandatory for multiple partial captures.
+	IdempotenceKey string
+}
+
+type TxnModificationResponse struct {
+	TxnUUID                string         `json:"txn_uuid,omitempty"`
+	TxnID                  string         `json:"txn_id,omitempty"`
+	OrderID                string         `json:"order_id,omitempty"`
+	Status                 string         `json:"status,omitempty"`
+	StatusID               int            `json:"status_id,omitempty"`
+	Amount                 float64        `json:"amount,omitempty"`
+	Currency               string         `json:"currency,omitempty"`
+	BankErrorCode          string         `json:"bank_error_code,omitempty"`
+	BankErrorMessage       string         `json:"bank_error_message,omitempty"`
+	PaymentGatewayResponse map[string]any `json:"payment_gateway_response,omitempty"`
 }
 
 type TransactionResponse struct {

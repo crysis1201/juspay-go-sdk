@@ -39,13 +39,17 @@ func NewClient(cfg Config) *Client {
 
 // doRequest is the internal helper for making authenticated HTTP requests.
 func (c *Client) doRequest(ctx context.Context, method, path string, body io.Reader, auth MerchantAuth) ([]byte, error) {
+	return c.doRequestWithContentType(ctx, method, path, "application/json", body, auth)
+}
+
+func (c *Client) doRequestWithContentType(ctx context.Context, method, path, contentType string, body io.Reader, auth MerchantAuth) ([]byte, error) {
 	reqURL := c.baseURL + path
 	req, err := http.NewRequestWithContext(ctx, method, reqURL, body)
 	if err != nil {
 		return nil, err
 	}
 	req.SetBasicAuth(auth.APIKey, "")
-	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Content-Type", contentType)
 	req.Header.Set("x-merchantid", "zuzu")
 
 	resp, err := c.httpClient.Do(req)

@@ -63,7 +63,9 @@ func main() {
 | `CreateOrder` | `POST /orders` | Create a new order |
 | `GetOrderStatus` | `GET /orders/{id}` | Fetch order status |
 | `CreateRefund` | `POST /orders/{id}/refunds` | Initiate a refund |
-| `CreateTransaction` | `POST /txns` | Charge a saved card (MOTO) |
+| `CreateTransaction` | `POST /txns` | Charge a saved card (MOTO); `AutoCapture: "false"` for pre-auth |
+| `CaptureTransaction` | `POST /v2/txns/{txn_uuid}/capture` | Capture a pre-auth (full, or partial via `Amount`) |
+| `VoidTransaction` | `POST /v2/txns/{txn_uuid}/void` | Release a pre-auth |
 | `ListCards` | `GET /cards` | List saved cards for a customer |
 | `FindCardToken` | - | Helper to look up a card token by card reference |
 | `ParseWebhookEvent` | - | Parse a Juspay webhook payload |

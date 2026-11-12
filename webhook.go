@@ -5,6 +5,7 @@ import "encoding/json"
 // Webhook event name constants.
 const (
 	EventOrderSucceeded       = "ORDER_SUCCEEDED"
+	EventOrderAuthorized      = "ORDER_AUTHORIZED"
 	EventOrderPartialPayment  = "ORDER_PARTIAL_CHARGED"
 	EventOrderFailed          = "ORDER_FAILED"
 	EventOrderRefunded        = "ORDER_REFUNDED"
