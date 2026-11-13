@@ -214,7 +214,7 @@ func TestCreateTransactionPreAuthFlow(t *testing.T) {
 	client, ts := testServer(t, func(w http.ResponseWriter, r *http.Request) {
 		var body map[string]any
 		json.NewDecoder(r.Body).Decode(&body)
-		rules, _ := json.Marshal(body["payment_rules"])
+		rules, _ := json.Marshal(body["order.payment_rules"])
 		want := `{"payment_flows":{"pre_auth_flow":{"info":{"capture_type":"MULTIPLE_PARTIAL_CAPTURE"},"status":"REQUIRED"}}}`
 		if string(rules) != want {
 			t.Errorf("payment_rules = %s, want %s", rules, want)
@@ -240,7 +240,7 @@ func TestCreateTransactionOmitsPaymentRules(t *testing.T) {
 	client, ts := testServer(t, func(w http.ResponseWriter, r *http.Request) {
 		var body map[string]any
 		json.NewDecoder(r.Body).Decode(&body)
-		if _, ok := body["payment_rules"]; ok {
+		if _, ok := body["order.payment_rules"]; ok {
 			t.Error("payment_rules sent for a plain sale")
 		}
 		json.NewEncoder(w).Encode(TransactionResponse{Status: "CHARGED"})

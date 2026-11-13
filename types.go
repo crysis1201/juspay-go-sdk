@@ -172,8 +172,8 @@ type CreateTransactionRequest struct {
 	// AutoCapture "false" makes the transaction a pre-auth (terminal status AUTHORIZED);
 	// empty leaves Juspay's default of immediate capture.
 	AutoCapture string `json:"order.metadata.txns.auto_capture,omitempty"`
-	// PaymentRules carries the pre-auth flow (status and capture_type) for a pre-auth transaction.
-	PaymentRules *PaymentRules `json:"payment_rules,omitempty"`
+	// PaymentRules carries the order's pre-auth flow (status and capture_type) for a pre-auth transaction.
+	PaymentRules *PaymentRules `json:"order.payment_rules,omitempty"`
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
