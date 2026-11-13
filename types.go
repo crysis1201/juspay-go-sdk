@@ -172,8 +172,14 @@ type CreateTransactionRequest struct {
 	// AutoCapture "false" makes the transaction a pre-auth (terminal status AUTHORIZED);
 	// empty leaves Juspay's default of immediate capture.
 	AutoCapture string `json:"order.metadata.txns.auto_capture,omitempty"`
-	// PaymentRules carries the order's pre-auth flow (status and capture_type) for a pre-auth transaction.
-	PaymentRules *PaymentRules `json:"order.payment_rules,omitempty"`
+	// Order carries the nested order fields that cannot be sent as flat "order.*" keys.
+	Order *TransactionOrder `json:"order,omitempty"`
+}
+
+// TransactionOrder is the nested "order" object of a /txns request.
+type TransactionOrder struct {
+	// PaymentRules carries the pre-auth flow (status and capture_type) for a pre-auth transaction.
+	PaymentRules *PaymentRules `json:"payment_rules,omitempty"`
 }
 
 // ──────────────────────────────────────────────────────────────────────────────

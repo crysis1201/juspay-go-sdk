@@ -214,10 +214,14 @@ func TestCreateTransactionPreAuthFlow(t *testing.T) {
 	client, ts := testServer(t, func(w http.ResponseWriter, r *http.Request) {
 		var body map[string]any
 		json.NewDecoder(r.Body).Decode(&body)
-		rules, _ := json.Marshal(body["order.payment_rules"])
-		want := `{"payment_flows":{"pre_auth_flow":{"info":{"capture_type":"MULTIPLE_PARTIAL_CAPTURE"},"status":"REQUIRED"}}}`
-		if string(rules) != want {
-			t.Errorf("payment_rules = %s, want %s", rules, want)
+		order, _ := json.Marshal(body["order"])
+		want := `{"payment_rules":{"payment_flows":{"pre_auth_flow":{"info":{"capture_type":"MULTIPLE_PARTIAL_CAPTURE"},"status":"REQUIRED"}}}}`
+		if string(order) != want {
+			t.Errorf("order = %s, want %s", order, want)
+		}
+		// The flat order keys are still sent alongside the nested order object.
+		if body["order.metadata.txns.auto_capture"] != "false" {
+			t.Errorf("auto_capture = %v, want false", body["order.metadata.txns.auto_capture"])
 		}
 		json.NewEncoder(w).Encode(TransactionResponse{Status: "AUTHORIZED"})
 	})
@@ -226,10 +230,10 @@ func TestCreateTransactionPreAuthFlow(t *testing.T) {
 	_, _, err := client.CreateTransaction(context.Background(), MerchantAuth{APIKey: "key"}, CreateTransactionRequest{
 		CardToken:   "tok",
 		AutoCapture: "false",
-		PaymentRules: &PaymentRules{PaymentFlows: &PaymentFlows{PreAuthFlow: &PreAuthFlow{
+		Order: &TransactionOrder{PaymentRules: &PaymentRules{PaymentFlows: &PaymentFlows{PreAuthFlow: &PreAuthFlow{
 			Status: PreAuthFlowRequired,
 			Info:   &PreAuthFlowInfo{CaptureType: CaptureTypeMultiplePartial},
-		}}},
+		}}}},
 	})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -240,8 +244,8 @@ func TestCreateTransactionOmitsPaymentRules(t *testing.T) {
 	client, ts := testServer(t, func(w http.ResponseWriter, r *http.Request) {
 		var body map[string]any
 		json.NewDecoder(r.Body).Decode(&body)
-		if _, ok := body["order.payment_rules"]; ok {
-			t.Error("payment_rules sent for a plain sale")
+		if _, ok := body["order"]; ok {
+			t.Error("nested order sent for a plain sale")
 		}
 		json.NewEncoder(w).Encode(TransactionResponse{Status: "CHARGED"})
 	})
