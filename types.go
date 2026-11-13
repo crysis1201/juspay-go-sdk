@@ -1,5 +1,7 @@
 package juspay
 
+import "encoding/json"
+
 // ──────────────────────────────────────────────────────────────────────────────
 // Session (POST /session)
 // ──────────────────────────────────────────────────────────────────────────────
@@ -172,14 +174,26 @@ type CreateTransactionRequest struct {
 	// AutoCapture "false" makes the transaction a pre-auth (terminal status AUTHORIZED);
 	// empty leaves Juspay's default of immediate capture.
 	AutoCapture string `json:"order.metadata.txns.auto_capture,omitempty"`
-	// Order carries the nested order fields that cannot be sent as flat "order.*" keys.
-	Order *TransactionOrder `json:"order,omitempty"`
+	// PaymentRules carries the pre-auth flow (status and capture_type) for a pre-auth transaction. /txns takes it
+	// as a JSON-encoded string under "order.payment_rules" (see MarshalJSON).
+	PaymentRules *PaymentRules `json:"-"`
 }
 
-// TransactionOrder is the nested "order" object of a /txns request.
-type TransactionOrder struct {
-	// PaymentRules carries the pre-auth flow (status and capture_type) for a pre-auth transaction.
-	PaymentRules *PaymentRules `json:"payment_rules,omitempty"`
+// MarshalJSON sends PaymentRules as the JSON-encoded string /txns expects; the other fields marshal as tagged.
+func (r CreateTransactionRequest) MarshalJSON() ([]byte, error) {
+	type plain CreateTransactionRequest
+	body := struct {
+		plain
+		PaymentRules string `json:"order.payment_rules,omitempty"`
+	}{plain: plain(r)}
+	if r.PaymentRules != nil {
+		rules, err := json.Marshal(r.PaymentRules)
+		if err != nil {
+			return nil, err
+		}
+		body.PaymentRules = string(rules)
+	}
+	return json.Marshal(body)
 }
 
 // ──────────────────────────────────────────────────────────────────────────────

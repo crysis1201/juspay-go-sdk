@@ -7,6 +7,7 @@ const (
 	EventOrderSucceeded       = "ORDER_SUCCEEDED"
 	EventOrderAuthorized      = "ORDER_AUTHORIZED"
 	EventOrderPartialPayment  = "ORDER_PARTIAL_CHARGED"
+	EventOrderVoided          = "ORDER_VOIDED"
 	EventOrderFailed          = "ORDER_FAILED"
 	EventOrderRefunded        = "ORDER_REFUNDED"
 	EventOrderRefundFailed    = "ORDER_REFUND_FAILED"
