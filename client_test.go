@@ -210,6 +210,48 @@ func TestCreateTransactionAutoCapture(t *testing.T) {
 	}
 }
 
+func TestCreateTransactionPreAuthFlow(t *testing.T) {
+	client, ts := testServer(t, func(w http.ResponseWriter, r *http.Request) {
+		var body map[string]any
+		json.NewDecoder(r.Body).Decode(&body)
+		rules, _ := json.Marshal(body["payment_rules"])
+		want := `{"payment_flows":{"pre_auth_flow":{"info":{"capture_type":"MULTIPLE_PARTIAL_CAPTURE"},"status":"REQUIRED"}}}`
+		if string(rules) != want {
+			t.Errorf("payment_rules = %s, want %s", rules, want)
+		}
+		json.NewEncoder(w).Encode(TransactionResponse{Status: "AUTHORIZED"})
+	})
+	defer ts.Close()
+
+	_, _, err := client.CreateTransaction(context.Background(), MerchantAuth{APIKey: "key"}, CreateTransactionRequest{
+		CardToken:   "tok",
+		AutoCapture: "false",
+		PaymentRules: &PaymentRules{PaymentFlows: &PaymentFlows{PreAuthFlow: &PreAuthFlow{
+			Status: PreAuthFlowRequired,
+			Info:   &PreAuthFlowInfo{CaptureType: CaptureTypeMultiplePartial},
+		}}},
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
+func TestCreateTransactionOmitsPaymentRules(t *testing.T) {
+	client, ts := testServer(t, func(w http.ResponseWriter, r *http.Request) {
+		var body map[string]any
+		json.NewDecoder(r.Body).Decode(&body)
+		if _, ok := body["payment_rules"]; ok {
+			t.Error("payment_rules sent for a plain sale")
+		}
+		json.NewEncoder(w).Encode(TransactionResponse{Status: "CHARGED"})
+	})
+	defer ts.Close()
+
+	if _, _, err := client.CreateTransaction(context.Background(), MerchantAuth{APIKey: "key"}, CreateTransactionRequest{CardToken: "tok"}); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
 func TestCaptureTransaction(t *testing.T) {
 	tests := []struct {
 		name     string

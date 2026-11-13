@@ -28,9 +28,30 @@ type PaymentRules struct {
 	PaymentFlows *PaymentFlows `json:"payment_flows,omitempty"`
 }
 
-// PaymentFlows contains the payment instrument rules.
+// PaymentFlows contains the payment instrument rules and the pre-auth flow.
 type PaymentFlows struct {
 	PaymentInstrumentRules *PaymentInstrumentRules `json:"payment_instrument_rules,omitempty"`
+	PreAuthFlow            *PreAuthFlow            `json:"pre_auth_flow,omitempty"`
+}
+
+// Pre-auth flow status and capture type values.
+const (
+	PreAuthFlowRequired = "REQUIRED"
+	PreAuthFlowOptional = "OPTIONAL"
+
+	CaptureTypeFull            = "CAPTURE"
+	CaptureTypePartial         = "PARTIAL_CAPTURE"
+	CaptureTypeMultiplePartial = "MULTIPLE_PARTIAL_CAPTURE"
+)
+
+// PreAuthFlow requests a pre-authorisation and sets how it may later be captured.
+type PreAuthFlow struct {
+	Status string           `json:"status"`
+	Info   *PreAuthFlowInfo `json:"info,omitempty"`
+}
+
+type PreAuthFlowInfo struct {
+	CaptureType string `json:"capture_type"`
 }
 
 // PaymentInstrumentRules defines the status and variant info.
@@ -151,6 +172,8 @@ type CreateTransactionRequest struct {
 	// AutoCapture "false" makes the transaction a pre-auth (terminal status AUTHORIZED);
 	// empty leaves Juspay's default of immediate capture.
 	AutoCapture string `json:"order.metadata.txns.auto_capture,omitempty"`
+	// PaymentRules carries the pre-auth flow (status and capture_type) for a pre-auth transaction.
+	PaymentRules *PaymentRules `json:"payment_rules,omitempty"`
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
